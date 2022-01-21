@@ -3,6 +3,8 @@ import { sharedConfig } from './vite.config';
 import { r, isDev } from './scripts/utils';
 import packageJson from './package.json';
 
+const browser = process.env.BROWSER ?? 'chrome';
+
 // bundling the content script using Vite
 export default defineConfig({
     ...sharedConfig,
@@ -12,7 +14,7 @@ export default defineConfig({
                   include: [r('src/content/**/*')]
               }
             : undefined,
-        outDir: r('build/dist/content'),
+        outDir: r(`build/${browser}/content`),
         cssCodeSplit: false,
         emptyOutDir: false,
         sourcemap: isDev ? 'inline' : false,

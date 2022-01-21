@@ -10,7 +10,7 @@ if (import.meta.hot) {
 
 (async function () {
     try {
-        console.log('Hello world!');
+        console.log(`We're running version ${__APP_VERSION__} on ${__BROWSER__}`);
     } catch (error) {
         logger.error(error);
     }

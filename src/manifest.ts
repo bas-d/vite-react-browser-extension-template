@@ -17,10 +17,10 @@ export async function getManifest(hash: string): Promise<Manifest.WebExtensionMa
         content_security_policy: `script-src 'self' 'wasm-eval'; object-src 'self'`,
         browser_action: {
             default_icon: './assets/icon-512.png',
-            default_popup: './dist/popup/index.html'
+            default_popup: './popup/index.html'
         },
         background: {
-            page: './dist/background/index.html',
+            page: './background/index.html',
             persistent: false
         },
         icons: {
@@ -32,7 +32,7 @@ export async function getManifest(hash: string): Promise<Manifest.WebExtensionMa
         content_scripts: [
             {
                 matches: ['http://*/*', 'https://*/*'],
-                js: ['./dist/content/index.global.js']
+                js: ['./content/index.global.js']
             }
         ],
         web_accessible_resources: []

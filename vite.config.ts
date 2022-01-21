@@ -3,6 +3,9 @@ import { defineConfig, UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import svgrPlugin from 'vite-plugin-svgr';
 import { r, port, isDev } from './scripts/utils';
+import { version } from './package.json';
+
+const browser = process.env.BROWSER ?? 'chrome';
 
 export const sharedConfig: UserConfig = {
     root: r('src'),
@@ -10,6 +13,10 @@ export const sharedConfig: UserConfig = {
         alias: {
             '~/': `${r('src')}/`
         }
+    },
+    define: {
+        __APP_VERSION__: JSON.stringify(version),
+        __BROWSER__: JSON.stringify(browser)
     },
     plugins: [
         react(),
@@ -42,7 +49,7 @@ export default defineConfig(({ command }) => ({
         }
     },
     build: {
-        outDir: r('build/dist'),
+        outDir: r(`build/${browser}`),
         emptyOutDir: false,
         sourcemap: isDev ? 'inline' : false,
         // https://developer.chrome.com/docs/webstore/program_policies/#:~:text=Code%20Readability%20Requirements

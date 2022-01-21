@@ -1,10 +1,12 @@
 // generate stub index.html files for dev entry
+import { execSync } from 'child_process';
 import chokidar from 'chokidar';
 import crypto from 'crypto';
 import fs from 'fs-extra';
 import path from 'path';
-import { getManifest } from '~/manifest';
 import { isDev, log, port, r } from './utils';
+
+const browser = process.env.BROWSER ?? 'chrome';
 
 // This enable react-refresh
 const preamble = `
@@ -25,21 +27,20 @@ async function stubIndexHtml() {
     const views = ['background', 'page', 'popup'];
 
     for (const view of views) {
-        await fs.ensureDir(r(`build/dist/${view}`));
+        await fs.ensureDir(r(`build/${browser}/${view}`));
         let data = await fs.readFile(r(`src/${view}/index.html`), 'utf-8');
         data = data
             .replace('"./main.ts"', `"http://localhost:${port}/${view}/main.ts"`)
             .replace('"./main.tsx"', `"http://localhost:${port}/${view}/main.tsx"`)
             .replace('</head>', `  <script type="module">${preamble}</script>\n  </head>`)
             .replace('<div id="app"></div>', '<div id="app">Vite server did not start</div>');
-        await fs.writeFile(r(`build/dist/${view}/index.html`), data, 'utf-8');
+        await fs.writeFile(r(`build/${browser}/${view}/index.html`), data, 'utf-8');
         log('PRE', `stub ${view}`);
     }
 }
 
-export async function writeManifest(hash: string): Promise<void> {
-    await fs.writeJSON(r('build/manifest.json'), await getManifest(hash), { spaces: 2 });
-    log('PRE', 'write manifest.json');
+function writeManifest(hash: string) {
+    execSync(`npx esno ./scripts/manifest.ts ${browser} ${hash}`, { stdio: 'inherit' });
 }
 
 async function transformLocale() {
@@ -50,15 +51,22 @@ async function transformLocale() {
         const updated = Object.fromEntries(
             Object.entries(translations).map(([key, value]) => [key, { message: value }])
         );
-        await fs.ensureDir(r(`build/_locales/${locale}`));
-        await fs.writeJSON(r(`build/_locales/${locale}/messages.json`), updated);
+        await fs.ensureDir(r(`build/${browser}/_locales/${locale}`));
+        await fs.writeJSON(r(`build/${browser}/_locales/${locale}/messages.json`), updated);
         log('PRE', `transform locale ${locale}`);
     }
+}
+
+async function copyAssets() {
+    await fs.ensureDir(r(`build/${browser}/assets`));
+    await fs.copy(r('public/assets'), r(`build/${browser}/assets`));
 }
 
 transformLocale();
 
 writeManifest(hash);
+
+copyAssets();
 
 if (isDev) {
     stubIndexHtml();
@@ -67,5 +75,8 @@ if (isDev) {
     });
     chokidar.watch([r('src/manifest.ts'), r('package.json')]).on('change', () => {
         writeManifest(hash);
+    });
+    chokidar.watch(r('public/assets')).on('change', () => {
+        copyAssets();
     });
 }
