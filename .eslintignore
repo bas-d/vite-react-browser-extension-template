@@ -1,3 +1,5 @@
 dist
+build
 node_modules
-public
+.eslintrc.js
+i18next-scanner.config.js
