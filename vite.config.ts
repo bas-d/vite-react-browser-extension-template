@@ -1,6 +1,6 @@
 import { dirname, relative } from 'path';
 import { defineConfig, UserConfig } from 'vite';
-import reactRefresh from '@vitejs/plugin-react-refresh';
+import react from '@vitejs/plugin-react';
 import { r, port, isDev } from './scripts/utils';
 
 export const sharedConfig: UserConfig = {
@@ -11,7 +11,7 @@ export const sharedConfig: UserConfig = {
         }
     },
     plugins: [
-        reactRefresh(),
+        react(),
         // rewrite assets to use relative path
         {
             name: 'assets-rewrite',
