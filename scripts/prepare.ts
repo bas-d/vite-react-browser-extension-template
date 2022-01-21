@@ -1,9 +1,22 @@
 // generate stub index.html files for dev entry
-import { execSync } from 'child_process';
-import fs from 'fs-extra';
 import chokidar from 'chokidar';
+import crypto from 'crypto';
+import fs from 'fs-extra';
 import path from 'path';
-import { r, port, isDev, log } from './utils';
+import { getManifest } from '~/manifest';
+import { isDev, log, port, r } from './utils';
+
+// This enable react-refresh
+const preamble = `
+      import RefreshRuntime from "http://localhost:${port}/@react-refresh";
+      RefreshRuntime.injectIntoGlobalHook(window);
+      window.$RefreshReg$ = () => {};
+      window.$RefreshSig$ = () => (type) => type;
+      window.__vite_plugin_react_preamble_installed__ = true;
+    `;
+const algorithm = 'sha256';
+const hash = `${algorithm}-${crypto.createHash(algorithm).update(preamble).digest('base64')}`;
+log('PRE', `integrity hash ${hash}`);
 
 /**
  * Stub index.html to use Vite in development
@@ -17,14 +30,16 @@ async function stubIndexHtml() {
         data = data
             .replace('"./main.ts"', `"http://localhost:${port}/${view}/main.ts"`)
             .replace('"./main.tsx"', `"http://localhost:${port}/${view}/main.tsx"`)
+            .replace('</head>', `  <script type="module">${preamble}</script>\n  </head>`)
             .replace('<div id="app"></div>', '<div id="app">Vite server did not start</div>');
         await fs.writeFile(r(`build/dist/${view}/index.html`), data, 'utf-8');
         log('PRE', `stub ${view}`);
     }
 }
 
-function writeManifest() {
-    execSync('npx esno ./scripts/manifest.ts', { stdio: 'inherit' });
+export async function writeManifest(hash: string): Promise<void> {
+    await fs.writeJSON(r('build/manifest.json'), await getManifest(hash), { spaces: 2 });
+    log('PRE', 'write manifest.json');
 }
 
 async function transformLocale() {
@@ -43,7 +58,7 @@ async function transformLocale() {
 
 transformLocale();
 
-writeManifest();
+writeManifest(hash);
 
 if (isDev) {
     stubIndexHtml();
@@ -51,6 +66,6 @@ if (isDev) {
         stubIndexHtml();
     });
     chokidar.watch([r('src/manifest.ts'), r('package.json')]).on('change', () => {
-        writeManifest();
+        writeManifest(hash);
     });
 }

@@ -6,7 +6,7 @@
     "proseWrap": "never",
     "overrides": [
         {
-            "files": ["*.yml", "*.yaml"],
+            "files": ["*.yml", "*.yaml", "*.html", "*.json"],
             "options": {
                 "tabWidth": 2
             }

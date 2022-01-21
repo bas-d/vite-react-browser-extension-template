@@ -3,7 +3,7 @@ import type { Manifest } from 'webextension-polyfill';
 import type PkgType from '../package.json';
 import { isDev, port, r } from '../scripts/utils';
 
-export async function getManifest(): Promise<Manifest.WebExtensionManifest> {
+export async function getManifest(hash: string): Promise<Manifest.WebExtensionManifest> {
     const pkg = (await fs.readJSON(r('package.json'))) as typeof PkgType;
 
     // update this file to update this manifest.json
@@ -46,7 +46,7 @@ export async function getManifest(): Promise<Manifest.WebExtensionManifest> {
         manifest.permissions?.push('webNavigation');
 
         // this is required on dev for Vite script to load
-        manifest.content_security_policy = `script-src 'self' 'wasm-eval' http://localhost:${port}; object-src 'self'`;
+        manifest.content_security_policy = `script-src 'self' 'wasm-eval' http://localhost:${port} '${hash}'; object-src 'self'`;
     }
 
     return manifest;
