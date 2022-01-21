@@ -22,7 +22,7 @@ log('PRE', `integrity hash ${hash}`);
  * Stub index.html to use Vite in development
  */
 async function stubIndexHtml() {
-    const views = ['background', 'page'];
+    const views = ['background', 'page', 'popup'];
 
     for (const view of views) {
         await fs.ensureDir(r(`build/dist/${view}`));

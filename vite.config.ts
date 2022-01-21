@@ -1,6 +1,7 @@
 import { dirname, relative } from 'path';
 import { defineConfig, UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import svgrPlugin from 'vite-plugin-svgr';
 import { r, port, isDev } from './scripts/utils';
 
 export const sharedConfig: UserConfig = {
@@ -12,6 +13,11 @@ export const sharedConfig: UserConfig = {
     },
     plugins: [
         react(),
+        svgrPlugin({
+            svgrOptions: {
+                icon: true
+            }
+        }),
         // rewrite assets to use relative path
         {
             name: 'assets-rewrite',
